@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const pool = require("../db");
+const jwt = require("jsonwebtoken");
 
 const register = async (req, res) => {
     const { name, email, password } = req.body;
