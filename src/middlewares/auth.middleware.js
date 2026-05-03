@@ -1,23 +1,21 @@
 const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
-    // Buscamos el token en los headers (Authorization: Bearer TOKEN)
+    // Intentamos obtener el token del Header O del Query string (?token=...)
     const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+    const token = (authHeader && authHeader.split(" ")[1]) || req.query.token;
 
     if (!token) {
-        return res
-            .status(401)
-            .json({ error: "Acceso denegado. No se proporcionó un token." });
+        // Si no hay token, el backend lanza el 401 que estás viendo
+        return res.status(401).json({ error: "No hay token de acceso" });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // Guardamos la info del usuario en el objeto request para usarlo luego
         req.user = decoded;
-        next(); // Continuar al siguiente paso
+        next();
     } catch (err) {
-        return res.status(403).json({ error: "Token inválido o expirado." });
+        return res.status(403).json({ error: "Token inválido o expirado" });
     }
 };
 
@@ -25,11 +23,9 @@ const isAdmin = (req, res, next) => {
     if (req.user && req.user.isAdmin) {
         next();
     } else {
-        return res
-            .status(403)
-            .json({
-                error: "Acceso restringido. Se requieren permisos de administrador.",
-            });
+        return res.status(403).json({
+            error: "Acceso restringido. Se requieren permisos de administrador.",
+        });
     }
 };
 
