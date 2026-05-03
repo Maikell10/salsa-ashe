@@ -12,19 +12,31 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: "v3", auth });
 
 const getMyClasses = async (req, res) => {
-    const { rank } = req.user; // Obtenido del JWT en el middleware
+    const { rank, isAdmin } = req.user; // Obtenemos isAdmin del token
 
     try {
-        // Traemos videos donde el rango sea menor o igual al del usuario
-        const result = await pool.query(
-            `SELECT v.id, v.title, v.description, v.drive_id, l.name as level_name
-             FROM videos v
-             JOIN levels l ON v.level_id = l.id
-             WHERE l.rank_value <= $1
-             ORDER BY l.rank_value ASC`,
-            [rank],
-        );
+        let query = "";
+        let params = [];
 
+        if (isAdmin) {
+            // El admin ve TODOS los videos de todos los niveles
+            query = `
+                SELECT v.id, v.title, v.description, v.drive_id, v.genre, l.name as level_name
+                FROM videos v
+                JOIN levels l ON v.level_id = l.id
+                ORDER BY l.rank_value ASC`;
+        } else {
+            // El alumno solo ve hasta su nivel
+            query = `
+                SELECT v.id, v.title, v.description, v.drive_id, v.genre, l.name as level_name
+                FROM videos v
+                JOIN levels l ON v.level_id = l.id
+                WHERE l.rank_value <= $1
+                ORDER BY l.rank_value ASC`;
+            params = [rank];
+        }
+
+        const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: "Error al obtener las clases." });
