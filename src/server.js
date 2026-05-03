@@ -12,8 +12,7 @@ const app = express();
 const allowedOrigins = [
     "http://localhost:3000", // Tu Angular local
     "http://localhost:4200", // Tu Angular local
-    "http://169.197.143.232:10001", // Tu frontend en producción
-    "https://condo-front-seven.vercel.app",
+    "https://salsayashe.vercel.app/", // Tu frontend en producción
 ];
 
 app.use(
