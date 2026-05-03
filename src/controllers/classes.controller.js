@@ -62,26 +62,29 @@ const streamVideo = async (req, res) => {
     const { driveId } = req.params;
 
     try {
-        // Pedimos el video a Google Drive como un stream
         const response = await drive.files.get(
             { fileId: driveId, alt: "media" },
             { responseType: "stream" },
         );
 
-        // Pasamos los headers de Google a nuestra respuesta (tipo de video, etc)
-        res.setHeader("Content-Type", response.headers["content-type"]);
+        // 1. Verificamos si existe el header, si no, usamos un default seguro
+        const contentType = response.headers["content-type"] || "video/mp4";
+        res.setHeader("Content-Type", contentType);
 
-        // Enviamos el stream directamente al cliente
+        // 2. Manejo de errores en el stream
         response.data
             .on("error", (err) => {
                 console.error("Error en el stream de Drive:", err);
-                res.status(500).end();
+                if (!res.headersSent)
+                    res.status(500).send("Error en el stream");
             })
             .pipe(res);
     } catch (err) {
-        console.error(err);
-        res.status(404).json({
-            error: "Video no encontrado o error en el servidor.",
+        // 3. Si llega aquí, es probable que Google Drive devolviera un 404 o 403
+        console.error("Error al conectar con Google Drive:", err.message);
+        res.status(err.code || 500).json({
+            error: "Google Drive no encontró el archivo o no tenemos permiso.",
+            details: err.message,
         });
     }
 };
