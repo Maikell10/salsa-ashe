@@ -37,6 +37,7 @@ const getMyClasses = async (req, res) => {
         }
 
         const result = await pool.query(query, params);
+        console.log("FILAS DE LA DB:", result.rows);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: "Error al obtener las clases." });
