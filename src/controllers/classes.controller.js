@@ -1,9 +1,12 @@
 const pool = require("../db");
 const { google } = require("googleapis");
 
-// Configuración de Google Drive (Necesitarás tu archivo JSON de Service Account)
+const credentials = process.env.GOOGLE_SERVICE_ACCOUNT_KEYS
+    ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEYS)
+    : require("../../salsayashe-58df38507a29.json");
+
 const auth = new google.auth.GoogleAuth({
-    keyFile: "../../salsayashe-58df38507a29.json", // El archivo que descargas de Google Cloud
+    credentials, // El archivo que descargas de Google Cloud
     scopes: ["https://www.googleapis.com/auth/drive.readonly"],
 });
 const drive = google.drive({ version: "v3", auth });
