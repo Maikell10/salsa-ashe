@@ -37,7 +37,25 @@ const getMyClasses = async (req, res) => {
         }
 
         const result = await pool.query(query, params);
-        res.json(result.rows);
+
+        const videosConThumb = await Promise.all(
+            result.rows.map(async (video) => {
+                try {
+                    const driveFile = await drive.files.get({
+                        fileId: video.drive_id,
+                        fields: "thumbnailLink",
+                    });
+                    return {
+                        ...video,
+                        thumbnail: driveFile.data.thumbnailLink,
+                    };
+                } catch (err) {
+                    return { ...video, thumbnail: null };
+                }
+            }),
+        );
+
+        res.json(videosConThumb);
     } catch (err) {
         res.status(500).json({ error: "Error al obtener las clases." });
     }

@@ -6,7 +6,7 @@ const authRoutes = require("./auth.routes");
 const classesRoutes = require("./classes.routes");
 const adminRoutes = require("./admin.routes");
 
-// Definir los prefijos para cada grupo de rutas
+// Definir los prefijos para cada grupo de rutas completos
 router.use("/auth", authRoutes);
 router.use("/classes", classesRoutes);
 router.use("/admin", adminRoutes);
